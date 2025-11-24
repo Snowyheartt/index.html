@@ -1,185 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-adsense-account" content="ca-pub-3276417360557292">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Temperature Converter</title>
+    <title>Universal Converter & AdSense Ready</title>
+    <meta name="google-adsense-account" content="ca-pub-3276417360557292">
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Set default font to Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        .converter-card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .ad-placeholder {
+            min-height: 100px;
+            background-color: #e5e7eb;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #9ca3af;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #10b981; /* Emerald green */
+            color: #10b981;
+            font-weight: 700;
+        }
+        /* Custom spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #10b981;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
-
-    <!-- 
-        *** GOOGLE ADSENSE CODE INTEGRATION (STEP 1: Global Script) ***
-        
-        NOTE: This is the official placeholder client ID (ca-pub-1234567890123456)
-        and is for demonstration only. 
-        You MUST replace this with your own approved AdSense Publisher ID for monetization.
-    -->
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3276417360557292"
-     crossorigin="anonymous"></script>
-    <!-- End AdSense Script -->
 </head>
-<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
-    <div id="app" class="w-full max-w-lg bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-2 text-center">Temperature Converter</h1>
-        <p class="text-gray-500 mb-8 text-center">Convert instantly between common temperature units.</p>
+<body class="p-4 md:p-8 min-h-screen flex flex-col items-center">
 
-        <!-- Input and Conversion Area -->
-        <div class="space-y-6">
-            <!-- Input Value -->
-            <div>
-                <label for="inputValue" class="block text-sm font-medium text-gray-700 mb-1">Enter Value</label>
-                <input type="number" id="inputValue" value="0" step="any"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg"
-                       oninput="convert()">
+    <!-- Header and Ad Banner (Top) -->
+    <div class="w-full max-w-xl mb-6">
+        <div class="ad-placeholder w-full rounded-lg mb-4 p-4">
+            AdSense Top Banner Ad Unit (728x90 / Responsive)
+        </div>
+    </div>
+
+    <!-- Main Converter Card -->
+    <div id="converterApp" class="converter-card bg-white p-6 md:p-8 rounded-xl w-full max-w-xl">
+        
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+            Universal Converter
+        </h1>
+
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="tab-temp" class="tab-button active flex-1 py-3 text-center text-gray-600 transition duration-150 ease-in-out hover:text-gray-800" onclick="switchTab('temperature')">
+                Temperature
+            </button>
+            <button id="tab-currency" class="tab-button flex-1 py-3 text-center text-gray-600 transition duration-150 ease-in-out hover:text-gray-800" onclick="switchTab('currency')">
+                Currency
+            </button>
+        </div>
+        
+        <!-- Tab Content: Temperature Converter -->
+        <div id="temperature-content" class="tab-content">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Temperature Conversion</h2>
+
+            <div class="mb-4">
+                <label for="tempInput" class="block text-sm font-medium text-gray-700 mb-1">Enter Temperature Value</label>
+                <input type="number" id="tempInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition duration-150" placeholder="e.g., 32" oninput="convertTemperature()">
             </div>
-            
-            <!-- From Unit Selection -->
-            <div>
-                <label for="fromUnit" class="block text-sm font-medium text-gray-700 mb-1">Convert From</label>
-                <select id="fromUnit"
-                        class="w-full p-3 border border-gray-300 bg-white rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg appearance-none"
-                        onchange="convert()">
+
+            <div class="mb-4">
+                <label for="tempUnit" class="block text-sm font-medium text-gray-700 mb-1">Select Unit</label>
+                <select id="tempUnit" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 appearance-none bg-white transition duration-150" onchange="convertTemperature()">
                     <option value="C">Celsius (°C)</option>
-                    <option value="F" selected>Fahrenheit (°F)</option>
-                    <option value="K">Kelvin (K)</option>
-                </select>
-            </div>
-
-            <div class="flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-            </div>
-
-            <!-- To Unit Selection -->
-            <div>
-                <label for="toUnit" class="block text-sm font-medium text-gray-700 mb-1">Convert To</label>
-                <select id="toUnit"
-                        class="w-full p-3 border border-gray-300 bg-white rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg appearance-none"
-                        onchange="convert()">
-                    <option value="C" selected>Celsius (°C)</option>
                     <option value="F">Fahrenheit (°F)</option>
                     <option value="K">Kelvin (K)</option>
                 </select>
             </div>
+
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                <p class="text-sm font-semibold text-emerald-700 mb-2">Results:</p>
+                <p id="resultC" class="text-gray-800">Celsius: <span class="font-mono">--</span></p>
+                <p id="resultF" class="text-gray-800">Fahrenheit: <span class="font-mono">--</span></p>
+                <p id="resultK" class="text-gray-800">Kelvin: <span class="font-mono">--</span></p>
+            </div>
+            <p id="tempError" class="text-red-500 text-sm mt-2 hidden">Please enter a valid number.</p>
         </div>
 
-        <!-- Result Display -->
-        <div class="mt-8 bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-            <h2 class="text-xl font-bold text-blue-800">Result:</h2>
-            <p id="result" class="text-3xl font-extrabold text-blue-600 mt-1">0.00 °C</p>
-        </div>
-        
-        <!-- 
-            *** GOOGLE ADSENSE CODE INTEGRATION (STEP 2: Ad Unit) ***
+        <!-- Tab Content: Currency Converter -->
+        <div id="currency-content" class="tab-content hidden">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Currency Conversion (Live Rates)</h2>
+            <div id="currencyLoading" class="flex items-center justify-center py-6 hidden">
+                <div class="spinner mr-3"></div>
+                <span class="text-gray-600">Fetching live rates...</span>
+            </div>
             
-            This is where a responsive ad unit would be displayed. 
-            You MUST replace the placeholder data-ad-client and data-ad-slot with your 
-            own approved AdSense values.
-        -->
-        <div class="mt-8 p-4 bg-gray-100 rounded-xl shadow-inner text-center border-dashed border-gray-300 border-2">
-            <p class="text-sm font-semibold text-gray-600 mb-2">ADVERTISEMENT (Placeholder Ad Unit)</p>
-            <ins class="adsbygoogle"
-                style="display:block; width: 100%; height: 100px; background-color: #e0e0e0; border: 1px solid #ccc; line-height: 100px; font-weight: bold; color: #444;"
-                data-ad-client="ca-pub-3276417360557292"
-                data-ad-slot="1122334455"
-                data-ad-format="auto"
-                data-full-width-responsive="true">
-                Ad Content Here
-            </ins>
-            <script>
-                // This script initiates the ad request for the unit placed above.
-                try {
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                } catch (e) {
-                    console.error("AdSense script execution error (expected if running locally):", e);
-                }
-            </script>
+            <div class="mb-4">
+                <label for="currencyAmount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                <input type="number" id="currencyAmount" value="1.00" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition duration-150" oninput="convertCurrency()">
+            </div>
+
+            <div class="flex space-x-4 mb-4">
+                <div class="flex-1">
+                    <label for="currencyFrom" class="block text-sm font-medium text-gray-700 mb-1">From</label>
+                    <select id="currencyFrom" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 appearance-none bg-white transition duration-150" onchange="convertCurrency()">
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="currencyTo" class="block text-sm font-medium text-gray-700 mb-1">To</label>
+                    <select id="currencyTo" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 appearance-none bg-white transition duration-150" onchange="convertCurrency()">
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                <p class="text-sm font-semibold text-emerald-700 mb-2">Converted Result:</p>
+                <p id="currencyResult" class="text-gray-800 text-xl font-bold">--</p>
+                <p id="rateInfo" class="text-sm text-gray-600 mt-2 italic">Rate: 1 <span id="infoFrom"></span> = <span id="infoRate">--</span> <span id="infoTo"></span></p>
+            </div>
+            <p id="currencyError" class="text-red-500 text-sm mt-2 hidden">Error fetching or processing rates. Please try again.</p>
         </div>
-        <!-- End Ad Unit -->
+
+    </div>
+
+    <!-- Ad Banner (Bottom) -->
+    <div class="w-full max-w-xl mt-6">
+        <div class="ad-placeholder w-full rounded-lg p-4">
+            AdSense Bottom Rectangle Ad Unit (300x250 / Responsive)
+        </div>
     </div>
 
     <script>
-        // Mapping of base unit names to display symbols
-        const unitSymbols = {
-            'C': ' °C',
-            'F': ' °F',
-            'K': ' K'
-        };
+        // --- Shared Application State ---
+        let currentTab = 'temperature';
+        const apiKey = ""; // API key is handled by the execution environment
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        let exchangeRates = {}; // Store fetched rates, base is USD
 
-        // Core conversion logic
-        function convert() {
-            const value = parseFloat(document.getElementById('inputValue').value);
-            const fromUnit = document.getElementById('fromUnit').value;
-            const toUnit = document.getElementById('toUnit').value;
-            const resultElement = document.getElementById('result');
+        // --- Core Functions: Temperature Converter ---
 
+        function convertTemperature() {
+            const input = document.getElementById('tempInput').value;
+            const unit = document.getElementById('tempUnit').value;
+            const errorElement = document.getElementById('tempError');
+            
+            const value = parseFloat(input);
             if (isNaN(value)) {
-                resultElement.textContent = "Invalid Input";
+                document.getElementById('resultC').querySelector('span').textContent = '--';
+                document.getElementById('resultF').querySelector('span').textContent = '--';
+                document.getElementById('resultK').querySelector('span').textContent = '--';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            errorElement.classList.add('hidden');
+
+            let C, F, K;
+
+            if (unit === 'C') {
+                C = value;
+                F = (C * 9/5) + 32;
+                K = C + 273.15;
+            } else if (unit === 'F') {
+                F = value;
+                C = (F - 32) * 5/9;
+                K = C + 273.15;
+            } else if (unit === 'K') {
+                K = value;
+                C = K - 273.15;
+                F = (C * 9/5) + 32;
+            }
+
+            document.getElementById('resultC').querySelector('span').textContent = C.toFixed(2) + ' °C';
+            document.getElementById('resultF').querySelector('span').textContent = F.toFixed(2) + ' °F';
+            document.getElementById('resultK').querySelector('span').textContent = K.toFixed(2) + ' K';
+        }
+
+        // --- Core Functions: Currency Converter ---
+
+        /**
+         * Converts currency based on the current UI state and fetched rates.
+         */
+        function convertCurrency() {
+            const amountInput = document.getElementById('currencyAmount');
+            const fromSelect = document.getElementById('currencyFrom');
+            const toSelect = document.getElementById('currencyTo');
+            const resultElement = document.getElementById('currencyResult');
+            const rateInfoElement = document.getElementById('rateInfo');
+
+            const amount = parseFloat(amountInput.value);
+            const from = fromSelect.value;
+            const to = toSelect.value;
+            
+            if (isNaN(amount) || amount < 0) {
+                resultElement.textContent = 'Invalid Amount';
+                rateInfoElement.classList.add('hidden');
                 return;
             }
 
-            let valueInCelsius;
+            rateInfoElement.classList.remove('hidden');
 
-            // Step 1: Convert starting unit to a common base (Celsius)
-            switch (fromUnit) {
-                case 'C':
-                    valueInCelsius = value;
-                    break;
-                case 'F':
-                    valueInCelsius = (value - 32) * (5 / 9);
-                    break;
-                case 'K':
-                    valueInCelsius = value - 273.15;
-                    break;
-                default:
-                    valueInCelsius = 0; // Should not happen
+            if (!exchangeRates[from] || !exchangeRates[to]) {
+                resultElement.textContent = 'Rates not loaded.';
+                return;
             }
 
-            let finalResult;
+            // 1. Convert "From" amount to the base currency (USD)
+            // exchangeRates[from] is the rate to get 1 USD. So 1/exchangeRates[from] is the rate to get 1 of the "From" currency in USD.
+            const usdAmount = amount / exchangeRates[from];
 
-            // Step 2: Convert from the base (Celsius) to the target unit
-            switch (toUnit) {
-                case 'C':
-                    finalResult = valueInCelsius;
-                    break;
-                case 'F':
-                    finalResult = (valueInCelsius * (9 / 5)) + 32;
-                    break;
-                case 'K':
-                    finalResult = valueInCelsius + 273.15;
-                    break;
-                default:
-                    finalResult = 0; // Should not happen
-            }
+            // 2. Convert USD amount to the "To" currency
+            // exchangeRates[to] is the rate to get 1 USD. So usdAmount * exchangeRates[to] gives the amount in the "To" currency.
+            const finalAmount = usdAmount * exchangeRates[to];
+            
+            // Calculate the direct exchange rate for info display
+            const directRate = exchangeRates[to] / exchangeRates[from];
 
-            // Display the final result, rounded to two decimal places
-            const symbol = unitSymbols[toUnit];
-            resultElement.textContent = `${finalResult.toFixed(2)}${symbol}`;
+
+            resultElement.textContent = `${finalAmount.toFixed(2)} ${to}`;
+            
+            // Update rate info
+            document.getElementById('infoFrom').textContent = from;
+            document.getElementById('infoRate').textContent = directRate.toFixed(4);
+            document.getElementById('infoTo').textContent = to;
         }
 
-        // Run conversion on load
-        window.onload = function() {
-            convert();
-        };
 
-        // Initial setup for the ad script to handle potential execution delay
-        window.onload = function() {
-            convert();
-            // This ensures the ad request runs after all elements are loaded
+        /**
+         * Fetches current exchange rates using Gemini API with Google Search grounding.
+         */
+        async function fetchRates() {
+            const loadingElement = document.getElementById('currencyLoading');
+            const errorElement = document.getElementById('currencyError');
+            const converterContent = document.getElementById('currency-content');
+
+            loadingElement.classList.remove('hidden');
+            errorElement.classList.add('hidden');
+            // Hide the converter content temporarily while loading
+            converterContent.querySelectorAll('input, select, .bg-emerald-50').forEach(el => el.classList.add('opacity-50', 'pointer-events-none'));
+
+
+            const userQuery = "Provide the current exchange rates for USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, INR, BRL, and KRW, using USD as the base currency (1 USD = X). Format the result as a simple JSON object where keys are the 3-letter currency code (e.g., USD, EUR) and values are the exchange rate (number).";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: "You are a data retrieval agent. Your task is to accurately fetch current foreign exchange rates and return them strictly in the requested JSON format, using Google Search grounding. Do not include any explanatory text, markdown formatting (like ```json), or notes outside the JSON object itself." }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            USD: { "type": "NUMBER" },
+                            EUR: { "type": "NUMBER" },
+                            GBP: { "type": "NUMBER" },
+                            JPY: { "type": "NUMBER" },
+                            CAD: { "type": "NUMBER" },
+                            AUD: { "type": "NUMBER" },
+                            CHF: { "type": "NUMBER" },
+                            CNY: { "type": "NUMBER" },
+                            INR: { "type": "NUMBER" },
+                            BRL: { "type": "NUMBER" },
+                            KRW: { "type": "NUMBER" }
+                        },
+                        // Ensure USD is 1.0, though the model should provide this if requested correctly.
+                        required: ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "INR", "BRL", "KRW"]
+                    }
+                }
+            };
+            
             try {
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            } catch (e) {
-                console.warn("AdSense push failed, this is normal in a non-AdSense environment.");
-            }
-        };
+                // Implementing basic exponential backoff
+                const MAX_RETRIES = 3;
+                let response = null;
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
+                    if (response.ok) break;
+                    
+                    // Simple exponential delay
+                    if (i < MAX_RETRIES - 1) {
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`API failed after ${MAX_RETRIES} retries.`);
+                }
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!jsonText) {
+                     throw new Error("Invalid response structure or empty content from API.");
+                }
+
+                // The model returns a string of JSON, we need to parse it
+                const rates = JSON.parse(jsonText);
+                
+                // Final validation: ensure rates were retrieved
+                if (!rates || typeof rates.USD !== 'number') {
+                    throw new Error("Parsed data is not a valid exchange rate object.");
+                }
+
+                exchangeRates = rates;
+                exchangeRates.USD = 1.0; // Ensure USD base rate is exactly 1.0
+                
+                populateCurrencySelects(exchangeRates);
+                convertCurrency(); // Run initial conversion
+                
+            } catch (e) {
+                console.error("Error fetching exchange rates:", e);
+                errorElement.classList.remove('hidden');
+                document.getElementById('currencyResult').textContent = 'Rates unavailable.';
+            } finally {
+                loadingElement.classList.add('hidden');
+                // Restore interactivity
+                converterContent.querySelectorAll('input, select, .bg-emerald-50').forEach(el => el.classList.remove('opacity-50', 'pointer-events-none'));
+            }
+        }
+
+        /**
+         * Populates the 'From' and 'To' currency select boxes.
+         */
+        function populateCurrencySelects(rates) {
+            const fromSelect = document.getElementById('currencyFrom');
+            const toSelect = document.getElementById('currencyTo');
+            
+            // Clear existing options
+            fromSelect.innerHTML = '';
+            toSelect.innerHTML = '';
+
+            const currencyCodes = Object.keys(rates).sort();
+            
+            currencyCodes.forEach(code => {
+                const optionFrom = new Option(code, code);
+                const optionTo = new Option(code, code);
+                
+                fromSelect.add(optionFrom);
+                toSelect.add(optionTo);
+            });
+            
+            // Set defaults: USD to EUR
+            fromSelect.value = 'USD';
+            toSelect.value = 'EUR';
+        }
+
+
+        // --- UI Control Functions ---
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+
+            contents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId === 'temperature' ? 'temp' : 'currency'}`).classList.add('active');
+
+            // If switching to currency for the first time, load rates
+            if (tabId === 'currency' && Object.keys(exchangeRates).length === 0) {
+                fetchRates();
+            }
+        }
+
+        // --- Initialization ---
+
+        window.onload = function() {
+            // Initialize temperature conversion on load
+            convertTemperature();
+            
+            // Initial call to load rates (hidden behind the tab)
+            // Rates are only fetched when the currency tab is first clicked.
+        };
     </script>
+
 </body>
 </html>
 
