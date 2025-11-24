@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Temperature Converter</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Set default font to Inter -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    </style>
+
+    <!-- 
+        *** GOOGLE ADSENSE CODE INTEGRATION (STEP 1: Global Script) ***
+        
+        NOTE: This is the official placeholder client ID (ca-pub-1234567890123456)
+        and is for demonstration only. 
+        You MUST replace this with your own approved AdSense Publisher ID for monetization.
+    -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+    <!-- End AdSense Script -->
+</head>
+<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
+    <div id="app" class="w-full max-w-lg bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2 text-center">Temperature Converter</h1>
+        <p class="text-gray-500 mb-8 text-center">Convert instantly between common temperature units.</p>
+
+        <!-- Input and Conversion Area -->
+        <div class="space-y-6">
+            <!-- Input Value -->
+            <div>
+                <label for="inputValue" class="block text-sm font-medium text-gray-700 mb-1">Enter Value</label>
+                <input type="number" id="inputValue" value="0" step="any"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg"
+                       oninput="convert()">
+            </div>
+            
+            <!-- From Unit Selection -->
+            <div>
+                <label for="fromUnit" class="block text-sm font-medium text-gray-700 mb-1">Convert From</label>
+                <select id="fromUnit"
+                        class="w-full p-3 border border-gray-300 bg-white rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg appearance-none"
+                        onchange="convert()">
+                    <option value="C">Celsius (°C)</option>
+                    <option value="F" selected>Fahrenheit (°F)</option>
+                    <option value="K">Kelvin (K)</option>
+                </select>
+            </div>
+
+            <div class="flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+
+            <!-- To Unit Selection -->
+            <div>
+                <label for="toUnit" class="block text-sm font-medium text-gray-700 mb-1">Convert To</label>
+                <select id="toUnit"
+                        class="w-full p-3 border border-gray-300 bg-white rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg appearance-none"
+                        onchange="convert()">
+                    <option value="C" selected>Celsius (°C)</option>
+                    <option value="F">Fahrenheit (°F)</option>
+                    <option value="K">Kelvin (K)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Result Display -->
+        <div class="mt-8 bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+            <h2 class="text-xl font-bold text-blue-800">Result:</h2>
+            <p id="result" class="text-3xl font-extrabold text-blue-600 mt-1">0.00 °C</p>
+        </div>
+        
+        <!-- 
+            *** GOOGLE ADSENSE CODE INTEGRATION (STEP 2: Ad Unit) ***
+            
+            This is where a responsive ad unit would be displayed. 
+            You MUST replace the placeholder data-ad-client and data-ad-slot with your 
+            own approved AdSense values.
+        -->
+        <div class="mt-8 p-4 bg-gray-100 rounded-xl shadow-inner text-center border-dashed border-gray-300 border-2">
+            <p class="text-sm font-semibold text-gray-600 mb-2">ADVERTISEMENT (Placeholder Ad Unit)</p>
+            <ins class="adsbygoogle"
+                style="display:block; width: 100%; height: 100px; background-color: #e0e0e0; border: 1px solid #ccc; line-height: 100px; font-weight: bold; color: #444;"
+                data-ad-client="ca-pub-1234567890123456"
+                data-ad-slot="1122334455"
+                data-ad-format="auto"
+                data-full-width-responsive="true">
+                Ad Content Here
+            </ins>
+            <script>
+                // This script initiates the ad request for the unit placed above.
+                try {
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                } catch (e) {
+                    console.error("AdSense script execution error (expected if running locally):", e);
+                }
+            </script>
+        </div>
+        <!-- End Ad Unit -->
+    </div>
+
+    <script>
+        // Mapping of base unit names to display symbols
+        const unitSymbols = {
+            'C': ' °C',
+            'F': ' °F',
+            'K': ' K'
+        };
+
+        // Core conversion logic
+        function convert() {
+            const value = parseFloat(document.getElementById('inputValue').value);
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const resultElement = document.getElementById('result');
+
+            if (isNaN(value)) {
+                resultElement.textContent = "Invalid Input";
+                return;
+            }
+
+            let valueInCelsius;
+
+            // Step 1: Convert starting unit to a common base (Celsius)
+            switch (fromUnit) {
+                case 'C':
+                    valueInCelsius = value;
+                    break;
+                case 'F':
+                    valueInCelsius = (value - 32) * (5 / 9);
+                    break;
+                case 'K':
+                    valueInCelsius = value - 273.15;
+                    break;
+                default:
+                    valueInCelsius = 0; // Should not happen
+            }
+
+            let finalResult;
+
+            // Step 2: Convert from the base (Celsius) to the target unit
+            switch (toUnit) {
+                case 'C':
+                    finalResult = valueInCelsius;
+                    break;
+                case 'F':
+                    finalResult = (valueInCelsius * (9 / 5)) + 32;
+                    break;
+                case 'K':
+                    finalResult = valueInCelsius + 273.15;
+                    break;
+                default:
+                    finalResult = 0; // Should not happen
+            }
+
+            // Display the final result, rounded to two decimal places
+            const symbol = unitSymbols[toUnit];
+            resultElement.textContent = `${finalResult.toFixed(2)}${symbol}`;
+        }
+
+        // Run conversion on load
+        window.onload = function() {
+            convert();
+        };
+
+        // Initial setup for the ad script to handle potential execution delay
+        window.onload = function() {
+            convert();
+            // This ensures the ad request runs after all elements are loaded
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {
+                console.warn("AdSense push failed, this is normal in a non-AdSense environment.");
+            }
+        };
+
+    </script>
+</body>
+</html>
+
